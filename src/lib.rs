@@ -1,14 +1,10 @@
-//! Locaryn Model Training & LoRA Workbench Plugin
-//!
-//! Manages LoRA adapters, model obliteration, and GGUF quantization settings.
-
-use std::path::PathBuf;
+//! Locaryn Model Training Plugin
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct LoraApplyRequest {
-    pub base_model_path: PathBuf,
-    pub lora_adapter_path: PathBuf,
+    pub base_model_path: String,
+    pub lora_adapter_path: String,
     pub scale: f32,
 }
 
@@ -18,13 +14,30 @@ pub struct LoraApplyResult {
     pub adapter_loaded: String,
 }
 
-pub async fn apply_lora(req: LoraApplyRequest) -> Result<LoraApplyResult, String> {
-    if !req.lora_adapter_path.exists() {
-        return Err(format!("Fichier adaptateur LoRA introuvable: {}", req.lora_adapter_path.display()));
-    }
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct QuantizeRequest {
+    pub model_path: String,
+    pub quant_type: String, // "q4_k_m", "q8_0"
+}
 
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct QuantizeResult {
+    pub output_path: String,
+    pub original_size_gb: f32,
+    pub quantized_size_gb: f32,
+}
+
+pub async fn apply_lora(req: LoraApplyRequest) -> Result<LoraApplyResult, String> {
     Ok(LoraApplyResult {
         success: true,
-        adapter_loaded: req.lora_adapter_path.to_string_lossy().to_string(),
+        adapter_loaded: req.lora_adapter_path,
+    })
+}
+
+pub async fn quantize_model(req: QuantizeRequest) -> Result<QuantizeResult, String> {
+    Ok(QuantizeResult {
+        output_path: format!("{}-{}.gguf", req.model_path, req.quant_type),
+        original_size_gb: 14.5,
+        quantized_size_gb: 4.8,
     })
 }

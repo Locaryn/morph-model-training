@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "refreshUrl": "https://raw.githubusercontent.com/Locaryn/plugin-model-training/main/dist/marketplace.json",
+  "owns": [
+    "lora",
+    "gguf-tools"
+  ],
+  "categories": [
+    {
+      "id": "model-training",
+      "label": "LoRA & Outils",
+      "icon": "lock",
+      "matches": [
+        "model-training"
+      ],
+      "requires": [
+        "model-training"
+      ]
+    }
+  ],
+  "models": [
+    {
+      "id": "code-specialist-lora",
+      "name": "Code Specialist LoRA",
+      "brand": "Locaryn Lab",
+      "description": "Adaptateur LoRA spécialisé pour l'ingénierie logicielle et le refactoring Rust/TypeScript.",
+      "license": "Apache-2.0",
+      "releaseDate": "2024-11-15",
+      "releaseYear": 2024,
+      "capabilities": [
+        "model-training"
+      ],
+      "variants": [
+        {
+          "size": "LoRA · 16M",
+          "params": 0.016,
+          "storageGb": 0.05,
+          "quants": [
+            "fp16"
+          ],
+          "tag": "https://huggingface.co/locaryn/code-specialist-lora/resolve/main/adapter_model.safetensors",
+          "downloads": []
+        }
+      ]
+    }
+  ]
+}

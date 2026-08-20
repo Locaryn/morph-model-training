@@ -1,8 +1,8 @@
 ---
 name: model-training
-description: Apply LoRA adapters, configure quantization levels, and manage fine-tuning weights.
+description: Appliquer des adaptateurs LoRA, quantifier des modèles en format compact GGUF.
 ---
 
-# Model Training Skill
+# Compétence Entraînement & Quantification
 
-Use `apply_lora` when the user asks to attach specialized LoRA weights to local models.
+Utilisez `apply_lora` pour attacher des poids LoRA et `quantize_model` pour compresser des modèles locaux.

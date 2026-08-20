@@ -2,25 +2,68 @@
   "$schema": "https://locaryn.dev/schema/plugin.json/v0.1",
   "apiVersion": "0.1",
   "name": "plugin-model-training",
-  "version": "1.0.0",
-  "description": "Model fine-tuning, LoRA adapters management, quantization & speculative decoding.",
+  "version": "1.1.0",
+  "description": "Entraînement LoRA, gestion des adaptateurs, quantification GGUF et oblitération de modèles.",
   "author": "Locaryn Team",
   "license": "Apache-2.0",
   "homepage": "https://github.com/Locaryn/plugin-model-training",
   "repository": "https://github.com/Locaryn/plugin-model-training",
-  "keywords": ["model-training", "lora", "gguf-quantization", "fine-tuning"],
+  "keywords": [
+    "model-training",
+    "lora",
+    "gguf-quantization",
+    "fine-tuning",
+    "obliteration"
+  ],
   "permissions": {
-    "files_read": true,
-    "files_write": true,
-    "shell": true
+    "mcp": {
+      "reason": "Lancer le gestionnaire d'entraînement et de quantification local."
+    },
+    "files.read": {
+      "reason": "Lire les modèles de base et adaptateurs LoRA."
+    },
+    "files.write": {
+      "reason": "Sauvegarder les fichiers quantifiés et adaptateurs entraînés."
+    }
   },
-  "capabilities": ["model-training"],
+  "components": {
+    "skills": [
+      "SKILL.md"
+    ],
+    "mcp": "mcp/mcp.json"
+  },
+  "capabilities": [
+    "model-training"
+  ],
   "ui_contributions": {
+    "slots": [
+      {
+        "id": "model-training-catalog",
+        "slot": "marketplace.catalogs",
+        "order": 19,
+        "type": "data",
+        "label": "Adaptateurs & Outils d'entraînement",
+        "icon": "lock",
+        "entry": "dist/marketplace.json",
+        "hint": "Ajoute les modèles et adaptateurs LoRA au catalogue"
+      },
+      {
+        "id": "model-training-studio",
+        "slot": "studio.tabs",
+        "order": 19,
+        "label": "Entraînement & LoRA",
+        "icon": "lock",
+        "type": "custom-element",
+        "entry": "dist/ui.js",
+        "tag": "locaryn-model-training-panel",
+        "hint": "Gestion des adaptateurs LoRA et quantification GGUF"
+      }
+    ],
     "nav_items": [
       {
-        "id": "training",
-        "label": "Entraînement & Oblitération",
-        "icon": "lock"
+        "id": "studio",
+        "label": "Studio de génération",
+        "icon": "image"
       }
     ]
   }
