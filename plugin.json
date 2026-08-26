@@ -1,13 +1,13 @@
 {
   "$schema": "https://locaryn.dev/schema/plugin.json/v0.1",
   "apiVersion": "0.1",
-  "name": "extension-model-training",
+  "name": "morph-model-training",
   "version": "1.1.0",
   "description": "Entraînement LoRA, gestion des adaptateurs, quantification GGUF et oblitération de modèles.",
   "author": "Locaryn Team",
   "license": "Apache-2.0",
-  "homepage": "https://github.com/Locaryn/extension-model-training",
-  "repository": "https://github.com/Locaryn/extension-model-training",
+  "homepage": "https://github.com/Locaryn/morph-model-training",
+  "repository": "https://github.com/Locaryn/morph-model-training",
   "keywords": [
     "model-training",
     "lora",
