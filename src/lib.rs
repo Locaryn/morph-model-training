@@ -27,17 +27,19 @@ pub struct QuantizeResult {
     pub quantized_size_gb: f32,
 }
 
-pub async fn apply_lora(req: LoraApplyRequest) -> Result<LoraApplyResult, String> {
-    Ok(LoraApplyResult {
-        success: true,
-        adapter_loaded: req.lora_adapter_path,
-    })
+/// Non implemente. La signature est conservee pour que l'interface et le
+/// serveur MCP gardent leur forme, mais l'appel echoue franchement plutot
+/// que de fabriquer un resultat.
+pub async fn apply_lora(_req: LoraApplyRequest) -> Result<LoraApplyResult, String> {
+    Err("L'application d'un adaptateur LoRA n'est pas implementee : ce morph ne charge aucun poids.".into())
 }
 
-pub async fn quantize_model(req: QuantizeRequest) -> Result<QuantizeResult, String> {
-    Ok(QuantizeResult {
-        output_path: format!("{}-{}.gguf", req.model_path, req.quant_type),
-        original_size_gb: 14.5,
-        quantized_size_gb: 4.8,
-    })
+/// Non implemente. La signature est conservee pour que l'interface et le
+/// serveur MCP gardent leur forme, mais l'appel echoue franchement plutot
+/// que de fabriquer un resultat.
+pub async fn quantize_model(_req: QuantizeRequest) -> Result<QuantizeResult, String> {
+    Err(
+        "La quantification n'est pas implementee : ce morph n'embarque aucun quantificateur."
+            .into(),
+    )
 }
