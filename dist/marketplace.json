@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "refreshUrl": "https://raw.githubusercontent.com/Locaryn/plugin-model-training/main/dist/marketplace.json",
+  "refreshUrl": "https://raw.githubusercontent.com/Locaryn/morph-model-training/main/dist/marketplace.json",
   "owns": [
     "lora",
     "gguf-tools"

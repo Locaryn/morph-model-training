@@ -1,4 +1,4 @@
-//! Stdio MCP server shipped by plugin-model-training.
+//! Stdio MCP server shipped by morph-model-training.
 use locaryn_plugin_model_training::{apply_lora, quantize_model, LoraApplyRequest, QuantizeRequest};
 use serde_json::{json, Value};
 use std::io::Write;
@@ -29,7 +29,7 @@ async fn handle_request(request: Value) -> Value {
         "initialize" => success(id, json!({
             "protocolVersion": "2025-06-18",
             "capabilities": { "tools": {} },
-            "serverInfo": { "name": "plugin-model-training", "version": VERSION }
+            "serverInfo": { "name": "morph-model-training", "version": VERSION }
         })),
         "tools/list" => success(id, tools_list()),
         "tools/call" => {
