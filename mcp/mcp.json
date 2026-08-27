@@ -1,7 +1,7 @@
 {
   "mcpServers": {
     "model-training": {
-      "command": "${LOCARYN_PLUGIN_ROOT}/bin/locaryn-model-training-mcp",
+      "command": "${LOCARYN_MORPH_ROOT}/bin/locaryn-model-training-mcp",
       "args": [],
       "env": {
         "RUST_LOG": "warn"
