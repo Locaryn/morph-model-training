@@ -57,14 +57,19 @@
         "entry": "dist/ui.js",
         "tag": "locaryn-model-training-panel",
         "hint": "Gestion des adaptateurs LoRA et quantification GGUF"
+      },
+      {
+        "id": "training-lora",
+        "slot": "nav.drawer",
+        "order": 19,
+        "type": "custom-element",
+        "label": "Entraînement & LoRA",
+        "icon": "shield",
+        "entry": "dist/ui.js",
+        "tag": "locaryn-model-training-panel",
+        "hint": "Adaptateurs LoRA, quantification GGUF et oblitération"
       }
     ],
-    "nav_items": [
-      {
-        "id": "studio",
-        "label": "Studio de génération",
-        "icon": "image"
-      }
-    ]
+    "nav_items": []
   }
 }

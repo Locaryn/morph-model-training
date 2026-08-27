@@ -1,138 +1,144 @@
+/**
+ * Le panneau d'entraînement, tel que l'application l'affiche.
+ *
+ * Light DOM et classes de l'hôte : pas de shadow root, pas de feuille de style
+ * à soi. Une extension qui se peint elle-même finit toujours par diverger de
+ * l'application — mauvaise police, mauvais rayon, mauvais vert. Ici les
+ * classes `locaryn-*` et les jetons `--*` font le travail, et le panneau suit
+ * le thème (sombre, clair, accent choisi) sans rien savoir de lui.
+ */
 (function () {
   "use strict";
 
-  const CSS = `
-:host { display: block; width: 100%; color: var(--text, #e8edf5); font-family: inherit; box-sizing: border-box; }
-* { box-sizing: border-box; }
-.panel-container { width: 100%; max-width: 920px; margin: 0 auto; display: flex; flex-direction: column; gap: 16px; }
-.header-card {
-  display: flex; align-items: center; justify-content: space-between; padding: 16px 20px;
-  background: var(--surface, rgba(255, 255, 255, 0.035)); border: 1px solid var(--border, rgba(255, 255, 255, 0.1));
-  border-radius: var(--radius, 12px);
-}
-.title-wrap { display: flex; align-items: center; gap: 12px; }
-.icon-box {
-  width: 40px; height: 40px; border-radius: 10px; background: rgba(var(--accent-rgb, 110, 168, 254), 0.15);
-  color: var(--accent, #6ea8fe); display: grid; place-items: center; font-size: 20px;
-}
-.title { font-size: 16px; font-weight: 700; color: var(--text, #e8edf5); }
-.subtitle { font-size: 12px; color: var(--text-faint, #96a3b8); margin-top: 2px; }
-.badge {
-  display: inline-flex; align-items: center; padding: 4px 10px; border-radius: 99px; font-size: 11px;
-  font-weight: 600; background: rgba(101, 211, 145, 0.12); color: #65d391; border: 1px solid rgba(101, 211, 145, 0.25);
-}
-.field-card {
-  display: flex; flex-direction: column; gap: 10px; background: var(--surface, rgba(255, 255, 255, 0.035));
-  border: 1px solid var(--border, rgba(255, 255, 255, 0.1)); border-radius: var(--radius, 12px); padding: 16px;
-}
-.label { font-size: 11px; font-weight: 700; color: var(--text-dim, #94a3b8); text-transform: uppercase; letter-spacing: 0.06em; }
-.input, .select {
-  width: 100%; border: 1px solid var(--border, rgba(255, 255, 255, 0.14)); border-radius: var(--radius-sm, 8px);
-  background: var(--bg, rgba(0, 0, 0, 0.25)); color: inherit; padding: 10px 12px; font: inherit; font-size: 13px; outline: none;
-}
-.btn-primary {
-  width: 100%; padding: 12px; background: var(--accent, #6ea8fe); color: #0b101b; border: none;
-  border-radius: var(--radius-sm, 8px); font-weight: 700; font-size: 14px; cursor: pointer;
-}
-.btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
-`;
+  const TAG = "locaryn-model-training-panel";
+
+  /** Le pont de l'hôte, quand il est là. Absent : mode local, rien n'est lancé. */
+  function bridge() {
+    return window.locaryn || window.LocarynPluginAPI || null;
+  }
 
   class LocarynModelTrainingPanel extends HTMLElement {
     constructor() {
       super();
-      this.attachShadow({ mode: "open" });
-      this.baseModel = "qwen2.5-coder-7b.gguf";
-      this.adapter = "code-specialist.safetensors";
-      this.scale = 1.0;
-      this.isApplying = false;
-      this.status = "";
+      this.baseModel = "";
+      this.adapter = "";
+      this.scale = 1;
+      this.applying = false;
+      this.status = null;
+      this.error = null;
     }
-    connectedCallback() { this.render(); }
+
+    connectedCallback() {
+      this.render();
+    }
 
     async apply() {
-      this.isApplying = true;
+      if (this.applying) return;
+      this.applying = true;
+      this.error = null;
+      this.status = null;
       this.render();
       try {
-        const bridge = window.locaryn || window.LocarynPluginAPI;
-        if (bridge && bridge.invokeExtensionTool) {
-          const res = await bridge.invokeExtensionTool("apply_lora", {
-            base_model_path: this.baseModel,
-            lora_adapter_path: this.adapter,
-            scale: Number(this.scale)
-          });
-          const parsed = typeof res === "string" ? JSON.parse(res) : res;
-          this.status = parsed.adapter_loaded ? "Adaptateur LoRA appliqué avec succès !" : "Erreur";
-        } else {
-          this.status = "Adaptateur LoRA appliqué avec succès (Mode local) !";
+        const api = bridge();
+        if (!api || !api.invokeExtensionTool) {
+          throw new Error(
+            "L'hôte n'expose pas d'outil d'extension : l'adaptateur ne peut pas être appliqué.",
+          );
         }
+        const raw = await api.invokeExtensionTool("apply_lora", {
+          base_model_path: this.baseModel,
+          lora_adapter_path: this.adapter,
+          scale: Number(this.scale),
+        });
+        const res = typeof raw === "string" ? JSON.parse(raw) : raw;
+        this.status = res && res.adapter_loaded
+          ? "Adaptateur attaché au modèle."
+          : "Le moteur n'a pas confirmé le chargement de l'adaptateur.";
       } catch (err) {
-        alert("Erreur LoRA: " + err);
+        // Jamais d'alert() : l'erreur reste dans le panneau, à côté de ce qui
+        // l'a produite, et se relit.
+        this.error = err && err.message ? err.message : String(err);
       } finally {
-        this.isApplying = false;
+        this.applying = false;
         this.render();
       }
     }
 
     render() {
-      this.shadowRoot.innerHTML = `
-        <style>${CSS}</style>
-        <div class="panel-container">
-          <div class="header-card">
-            <div class="title-wrap">
-              <div class="icon-box">🧠</div>
-              <div>
-                <div class="title">Studio LoRA & Quantification</div>
-                <div class="subtitle">Gestion des adaptateurs LoRA et compression de modèles GGUF</div>
-              </div>
-            </div>
-            <div class="badge">Actif</div>
+      const pret = this.baseModel.trim() && this.adapter.trim() && !this.applying;
+      this.innerHTML = `
+        <div class="locaryn-card">
+          <h3>Adaptateur LoRA</h3>
+          <p class="locaryn-field-hint">
+            Attacher un adaptateur déjà entraîné à un modèle de base. L'entraînement lui-même
+            passe par le serveur MCP de cette extension.
+          </p>
+
+          <div class="locaryn-field">
+            <label class="locaryn-field-label" for="mt-base">Modèle de base</label>
+            <input class="locaryn-input" id="mt-base" value="${escape(this.baseModel)}"
+                   placeholder="qwen2.5-coder-7b.gguf" />
           </div>
 
-          <div class="field-card">
-            <label class="label">Modèle de base</label>
-            <input class="input" id="mt-base" value="${this.baseModel}" placeholder="ex: qwen2.5-coder-7b.gguf" />
+          <div class="locaryn-field">
+            <label class="locaryn-field-label" for="mt-adapter">Fichier de l'adaptateur</label>
+            <input class="locaryn-input" id="mt-adapter" value="${escape(this.adapter)}"
+                   placeholder="mon-adaptateur.safetensors" />
           </div>
 
-          <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 12px;">
-            <div class="field-card">
-              <label class="label">Fichier Adaptateur LoRA (.safetensors)</label>
-              <input class="input" id="mt-adapter" value="${this.adapter}" placeholder="ex: mon_adaptateur.safetensors" />
-            </div>
-            <div class="field-card">
-              <label class="label">Poids (Scale: ${this.scale})</label>
-              <input class="input" type="number" step="0.1" min="0.1" max="2.0" id="mt-scale" value="${this.scale}" />
-            </div>
+          <div class="locaryn-field">
+            <label class="locaryn-field-label" for="mt-scale">Poids</label>
+            <input class="locaryn-input" id="mt-scale" type="number" step="0.1" min="0.1" max="2"
+                   value="${this.scale}" />
+            <p class="locaryn-field-hint">1,0 applique l'adaptateur tel qu'il a été entraîné.</p>
           </div>
 
-          <button class="btn-primary" id="mt-btn" ${this.isApplying ? "disabled" : ""}>
-            ${this.isApplying ? "Application du LoRA..." : "Attacher l'adaptateur au modèle"}
-          </button>
+          <div class="locaryn-field-actions">
+            <button type="button" class="locaryn-btn-primary" id="mt-apply" ${pret ? "" : "disabled"}>
+              ${this.applying ? "Application…" : "Attacher l'adaptateur"}
+            </button>
+          </div>
 
-          ${this.status ? `
-            <div class="field-card" style="margin-top: 10px;">
-              <div style="font-size: 14px; font-weight: 700; color: #65d391;">
-                ${this.status}
-              </div>
-            </div>
-          ` : ""}
+          ${this.status ? `<p class="locaryn-field-hint">${escape(this.status)}</p>` : ""}
+          ${this.error ? `<div class="locaryn-vp-error">${escape(this.error)}</div>` : ""}
         </div>
       `;
 
-      const baseEl = this.shadowRoot.querySelector("#mt-base");
-      if (baseEl) baseEl.addEventListener("input", (e) => { this.baseModel = e.target.value; });
+      const bind = (id, handler) => {
+        const el = this.querySelector(id);
+        if (el) el.addEventListener("input", handler);
+      };
+      bind("#mt-base", (e) => {
+        this.baseModel = e.target.value;
+        this.refreshButton();
+      });
+      bind("#mt-adapter", (e) => {
+        this.adapter = e.target.value;
+        this.refreshButton();
+      });
+      bind("#mt-scale", (e) => {
+        this.scale = Number(e.target.value);
+      });
 
-      const adaptEl = this.shadowRoot.querySelector("#mt-adapter");
-      if (adaptEl) adaptEl.addEventListener("input", (e) => { this.adapter = e.target.value; });
-
-      const scaleEl = this.shadowRoot.querySelector("#mt-scale");
-      if (scaleEl) scaleEl.addEventListener("input", (e) => { this.scale = Number(e.target.value); });
-
-      const btn = this.shadowRoot.querySelector("#mt-btn");
+      const btn = this.querySelector("#mt-apply");
       if (btn) btn.addEventListener("click", () => this.apply());
+    }
+
+    /** Réactiver le bouton sans réécrire le panneau : sinon la saisie perd le curseur. */
+    refreshButton() {
+      const btn = this.querySelector("#mt-apply");
+      if (btn) btn.disabled = !(this.baseModel.trim() && this.adapter.trim()) || this.applying;
     }
   }
 
-  if (!customElements.get("locaryn-model-training-panel")) {
-    customElements.define("locaryn-model-training-panel", LocarynModelTrainingPanel);
+  function escape(value) {
+    return String(value == null ? "" : value).replace(
+      /[&<>"']/g,
+      (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c],
+    );
+  }
+
+  if (!customElements.get(TAG)) {
+    customElements.define(TAG, LocarynModelTrainingPanel);
   }
 })();
